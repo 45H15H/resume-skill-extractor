@@ -6,10 +6,9 @@ import time
 import csv
 import json  # For work_experience serialization
 from pathlib import Path
+from pdf2image import convert_from_path
 
-import base64
 import io
-import fitz
 from PIL import Image
 
 from openai import OpenAI
@@ -76,10 +75,18 @@ with col1:
         )
         
     # Get total pages when file is uploaded
+    temp_files = []
     if uploaded_files:
         for uploaded_file in uploaded_files:
-            with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
-                st.session_state.total_pages = doc.page_count
+            # Save uploaded file to a temp file
+            fd, path = tempfile.mkstemp()
+            with os.fdopen(fd, 'wb') as tmp:
+                tmp.write(uploaded_file.getvalue())
+            temp_files.append(path)
+
+            # Use pdf2image to get total pages
+            pdf_images = convert_from_path(path, poppler_path = r"C:\Users\ashis\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin")
+            st.session_state.total_pages = len(pdf_images)
             uploaded_file.seek(0)  # Reset file pointer
     
     if st.session_state.total_pages > 0:
@@ -96,7 +103,6 @@ with col1:
 
     # Extract and display resume fields
     # Track temp files for later cleanup
-    temp_files = []
     if uploaded_files:
         for uploaded_file in uploaded_files:
             fd, path = tempfile.mkstemp()
@@ -104,13 +110,12 @@ with col1:
                 tmp.write(uploaded_file.getvalue())
             temp_files.append(path)
 
-            # PDF-to-image extraction (close PDF after use)
-            with fitz.open(path) as pdf_document:
-                images = []
-                for page_number in page_numbers:
-                    page = pdf_document.load_page(page_number - 1)
-                    pix = page.get_pixmap()
-                    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            # PDF-to-image extraction using pdf2image
+            images = []
+            pdf_images = convert_from_path(path, poppler_path = r"C:\Users\ashis\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin")
+            for page_number in page_numbers:
+                if 1 <= page_number <= len(pdf_images):
+                    img = pdf_images[page_number - 1]
                     buffer = io.BytesIO()
                     img.save(buffer, format="PNG")
                     base64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
