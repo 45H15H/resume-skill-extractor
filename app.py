@@ -85,7 +85,8 @@ with col1:
             temp_files.append(path)
 
             # Use pdf2image to get total pages
-            pdf_images = convert_from_path(path, poppler_path = r"C:\Users\ashis\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin")
+            # pdf_images = convert_from_path(path, poppler_path = r"C:\Users\ashis\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin")
+            pdf_images = convert_from_path(path, poppler_path = r"/usr/bin")
             st.session_state.total_pages = len(pdf_images)
             uploaded_file.seek(0)  # Reset file pointer
     
@@ -112,7 +113,8 @@ with col1:
 
             # PDF-to-image extraction using pdf2image
             images = []
-            pdf_images = convert_from_path(path, poppler_path = r"C:\Users\ashis\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin")
+            # pdf_images = convert_from_path(path, poppler_path = r"C:\Users\ashis\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin")
+            pdf_images = convert_from_path(path, poppler_path = r"/usr/bin")
             for page_number in page_numbers:
                 if 1 <= page_number <= len(pdf_images):
                     img = pdf_images[page_number - 1]
